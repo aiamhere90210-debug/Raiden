@@ -7,32 +7,18 @@
     <title>Raiden: Vector Overdrive Ultimate</title>
     <style>
         body {
-    margin: 0;
-    background: url('RaidenPic1.jpeg') no-repeat center center fixed;
-    background-size: cover; /* Ensures the image stretches to fill the whole screen */
-    color: white;
-    font-family: 'Courier New', Courier, monospace;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
-    /* Prevents pull-to-refresh gestures on mobile */
-    overscroll-behavior-y: contain; 
-}
-
-/* --- STEP 2 GOES HERE (Right inside your style tags) --- */
-#joystick-zone {
-    position: absolute; 
-    bottom: 20px; 
-    left: 20px; 
-    width: 150px; 
-    height: 150px; 
-    z-index: 10;
-    /* Optional: uncomment the line below if you want to see the box while testing */
-    /* border: 1px dashed rgba(255,255,255,0.3); */
-}
-        
+            margin: 0;
+            background: url('RaidenPic1.jpeg') no-repeat center center fixed;
+            background-size: cover; 
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            overscroll-behavior-y: contain; 
+        }
         .canvas-container {
             position: relative;
             box-shadow: 0 0 60px rgba(0, 242, 254, 0.35);
@@ -47,7 +33,6 @@
             height: auto;
             max-height: 100vh;
         }
-        /* Menu Screen UI Overlay */
         #menuOverlay {
             position: absolute;
             top: 0;
@@ -120,40 +105,23 @@
 
         /* --- MOBILE VIRTUAL HANDHELD OVERLAY --- */
         #mobileController {
-            display: none; /* Hidden on desktop viewports */
+            display: none; 
             position: absolute;
             bottom: 15px;
             left: 0;
             width: 100%;
             height: 160px;
-            pointer-events: none; /* Let empty space clicks pass back into game viewport safely */
+            pointer-events: none; 
             z-index: 20;
         }
-        .dpad {
+        #joystick-zone {
             position: absolute;
             bottom: 10px;
             left: 15px;
-            display: grid;
-            grid-template-columns: repeat(3, 45px);
-            grid-template-rows: repeat(3, 45px);
-            gap: 2px;
+            width: 140px;
+            height: 140px;
             pointer-events: auto;
         }
-        .dpad-btn {
-            background: rgba(17, 20, 36, 0.75);
-            border: 2px solid #00f2fe;
-            color: #00f2fe;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 8px;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-        .dpad-btn.up    { grid-column: 2; grid-row: 1; }
-        .dpad-btn.left  { grid-column: 1; grid-row: 2; }
-        .dpad-btn.right { grid-column: 3; grid-row: 2; }
-        .dpad-btn.down  { grid-column: 2; grid-row: 3; }
-
         .action-buttons {
             position: absolute;
             bottom: 15px;
@@ -186,7 +154,6 @@
             margin-top: -15px;
         }
 
-        /* Detect smaller responsive displays/mobile contexts */
         @media (max-width: 768px) {
             #mobileController {
                 display: block;
@@ -196,19 +163,14 @@
 </head>
 <body>
 
-    <div id="joystick-zone"></div>
-
-    <div class="canvas-container">
-        <canvas id="gameCanvas"></canvas>
-    </div>
 <div class="canvas-container">
     <div id="menuOverlay">
         <div class="menu-title">VECTOR OVERDRIVE: ULTIMATE</div>
         
         <div class="controls-info">
-            ARROW KEYS : MOVE / USE D-PAD<br>
-            SPACEBAR   : MATRIX FIRE MAIN CANNON<br>
-            LEFT SHIFT : DETONATE OVERLOAD BOMB
+            ARROW KEYS / JOYSTICK : MOVE SHIP<br>
+            SPACEBAR / FIRE BTN   : MATRIX FIRE MAIN CANNON<br>
+            LEFT SHIFT / BOMB BTN : DETONATE OVERLOAD BOMB
         </div>
 
         <button class="menu-btn" id="startBtn">INITIALIZE FLIGHT</button>
@@ -228,12 +190,8 @@
     <canvas id="gameCanvas" width="450" height="600"></canvas>
 
     <div id="mobileController">
-        <div class="dpad">
-            <button class="dpad-btn up" id="padUp">▲</button>
-            <button class="dpad-btn left" id="padLeft">◀</button>
-            <button class="dpad-btn right" id="padRight">▶</button>
-            <button class="dpad-btn down" id="padDown">▼</button>
-        </div>
+        <div id="joystick-zone"></div>
+        
         <div class="action-buttons">
             <button class="action-btn bomb" id="btnBomb">BOMB</button>
             <button class="action-btn fire" id="btnFire">FIRE</button>
@@ -242,34 +200,6 @@
 </div>
 
 <script>
-// 1. Tell NippleJS where to build the joystick
-const joystickContainer = document.getElementById('joystick-zone');
-
-// 2. Configure the joystick
-const manager = nipplejs.create({
-    zone: joystickContainer,
-    mode: 'dynamic', // It pops up exactly where your thumb touches
-    color: 'cyan',   // Matches your game's cool neon vibe
-    size: 100
-});
-
-// 3. Variables to hold the direction data (-1 to 1)
-let joystickX = 0;
-let joystickY = 0;
-
-// 4. Listen for movement
-manager.on('move', (evt, data) => {
-     (data.vector) {
-        joystickX = data.vector.x; // Left is negative, Right is positive
-        joystickY = data.vector.y; // Up is positive, Down is negative
-    }
-});
-
-// 5. Reset when thumb is lifted
-manager.on('end', () => {
-    joystickX = 0;
-    joystickY = 0;
-});    
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -277,6 +207,33 @@ const menuOverlay = document.getElementById("menuOverlay");
 const startBtn = document.getElementById("startBtn");
 const musicVolSlider = document.getElementById("musicVol");
 const sfxVolSlider = document.getElementById("sfxVol");
+
+// ==========================================
+// --- VIRTUAL JOYSTICK INITIALIZATION MODULE ---
+// ==========================================
+const joystickContainer = document.getElementById('joystick-zone');
+const manager = nipplejs.create({
+    zone: joystickContainer,
+    mode: 'static',
+    position: { left: '70px', bottom: '70px' },
+    color: '#00f2fe',
+    size: 110
+});
+
+let joystickX = 0;
+let joystickY = 0;
+
+manager.on('move', (evt, data) => {
+    if (data.vector) {
+        joystickX = data.vector.x;
+        joystickY = data.vector.y;
+    }
+});
+
+manager.on('end', () => {
+    joystickX = 0;
+    joystickY = 0;
+});
 
 // ==========================================
 // --- AUDIO & ADVENTURE SOUNDTRACK MATRIX ---
@@ -312,7 +269,6 @@ function initAudio() {
 musicVolSlider.addEventListener("input", (e) => { musicVolumeMultiplier = parseFloat(e.target.value); });
 sfxVolSlider.addEventListener("input", (e) => { sfxVolumeMultiplier = parseFloat(e.target.value); });
 
-// Unified, clean startup click processor
 startBtn.addEventListener("click", () => {
     initAudio();
     if (gameState === "GAMEOVER") {
@@ -532,37 +488,17 @@ window.addEventListener("keydown", (e) => {
 });
 window.addEventListener("keyup", (e) => keys[e.code] = false);
 
-// --- VIRTUAL SCREEN CONTROLLER INTERFACES LINK MODULE ---
-const mobileKeysMap = {
-    "padUp": "ArrowUp",
-    "padDown": "ArrowDown",
-    "padLeft": "ArrowLeft",
-    "padRight": "ArrowRight",
-    "btnFire": "Space"
-};
-
-function bindMobileButton(elementId, targetKeyCode) {
-    const btn = document.getElementById(elementId);
-    if (!btn) return;
-
-    const pressAction = (e) => {
-        if (gameState !== "PLAYING") return;
-        keys[targetKeyCode] = true;
+// --- TACTILE ACTION INTERFACES ACTION LINKED MATRIX ---
+const btnFire = document.getElementById("btnFire");
+if (btnFire) {
+    btnFire.addEventListener("touchstart", (e) => {
+        if (gameState === "PLAYING") keys["Space"] = true;
         e.preventDefault();
-    };
-
-    const releaseAction = (e) => {
-        keys[targetKeyCode] = false;
+    }, { passive: false });
+    btnFire.addEventListener("touchend", (e) => {
+        keys["Space"] = false;
         e.preventDefault();
-    };
-
-    btn.addEventListener("touchstart", pressAction, { passive: false });
-    btn.addEventListener("touchend", releaseAction, { passive: false });
-    btn.addEventListener("touchcancel", releaseAction, { passive: false });
-}
-
-for (let id in mobileKeysMap) {
-    bindMobileButton(id, mobileKeysMap[id]);
+    }, { passive: false });
 }
 
 const bombBtn = document.getElementById("btnBomb");
@@ -586,41 +522,37 @@ const player = {
     bombs: 2,
 
     update() {
-    let moving = false;
-
-    // --- 1. KEYBOARD CONTROLS (Keep them so both work!) ---
-    if (keys["ArrowLeft"] && this.x > 0) { this.x -= this.speed; this.roll = Math.max(-1, this.roll - 0.18); moving = true; }
-    if (keys["ArrowRight"] && this.x < canvas.width - this.width) { this.x += this.speed; this.roll = Math.min(1, this.roll + 0.18); moving = true; }
-    if (keys["ArrowUp"] && this.y > 0) this.y -= this.speed;
-    if (keys["ArrowDown"] && this.y < canvas.height - this.height) this.y += this.speed;
-
-    // --- 2. NEW VIRTUAL JOYSTICK CONTROLS ---
-    if (Math.abs(joystickX) > 0.1 || Math.abs(joystickY) > 0.1) {
-        moving = true;
+        let moving = false;
         
-        // Move the ship based on joystick angle/distance
-        this.x += joystickX * this.speed;
-        this.y -= joystickY * this.speed; // Minus because joystick up is positive, Canvas up is negative
+        // --- KEYBOARD LOOPS ---
+        if (keys["ArrowLeft"] && this.x > 0) { this.x -= this.speed; this.roll = Math.max(-1, this.roll - 0.18); moving = true; }
+        if (keys["ArrowRight"] && this.x < canvas.width - this.width) { this.x += this.speed; this.roll = Math.min(1, this.roll + 0.18); moving = true; }
+        if (keys["ArrowUp"] && this.y > 0) this.y -= this.speed;
+        if (keys["ArrowDown"] && this.y < canvas.height - this.height) this.y += this.speed;
 
-        // Handle the visual ship roll based on joystick tilt
-        if (joystickX < 0) this.roll = Math.max(-1, this.roll - 0.18);
-        if (joystickX > 0) this.roll = Math.min(1, this.roll + 0.18);
-    }
+        // --- VIRTUAL CONTROLLER RUNTIME VECTOR MATRIX ---
+        if (Math.abs(joystickX) > 0.15 || Math.abs(joystickY) > 0.15) {
+            moving = true;
+            this.x += joystickX * this.speed;
+            this.y -= joystickY * this.speed; 
 
-    // --- 3. BOUNDARY CLAMPING (Prevents joystick from flying off-screen) ---
-    if (this.x < 0) this.x = 0;
-    if (this.x > canvas.width - this.width) this.x = canvas.width - this.width;
-    if (this.y < 0) this.y = 0;
-    if (this.y > canvas.height - this.height) this.y = canvas.height - this.height;
+            if (joystickX < -0.15) this.roll = Math.max(-1, this.roll - 0.18);
+            if (joystickX > 0.15) this.roll = Math.min(1, this.roll + 0.18);
+        }
 
-    // --- 4. ENGINE FLAMES & ROLL STABILIZATION ---
-    if (!moving) this.roll *= 0.78;
+        // --- POSITION EDGE BOUNDARY CLAMP ENGINE ---
+        if (this.x < 0) this.x = 0;
+        if (this.x > canvas.width - this.width) this.x = canvas.width - this.width;
+        if (this.y < 0) this.y = 0;
+        if (this.y > canvas.height - this.height) this.y = canvas.height - this.height;
 
-    if (frameCount % 2 === 0) {
-        createPlasmaFlame(this.x + 8 + (this.roll * 4), this.y + this.height - 2, '#ff007f');
-        createPlasmaFlame(this.x + this.width - 12 + (this.roll * 4), this.y + this.height - 2, '#ff007f');
-    }
-},
+        if (!moving) this.roll *= 0.78;
+
+        if (frameCount % 2 === 0) {
+            createPlasmaFlame(this.x + 8 + (this.roll * 4), this.y + this.height - 2, '#ff007f');
+            createPlasmaFlame(this.x + this.width - 12 + (this.roll * 4), this.y + this.height - 2, '#ff007f');
+        }
+    },
 
     triggerBomb() {
         if (this.bombs <= 0) return;
@@ -814,16 +746,12 @@ function resetGame() {
     currentMeasure = 4; currentSection = "VERSE";
 }
 
-// ==========================================
-// --- MATHEMATICAL TICK RUNTIME LOOP ---
-// ==========================================
 function update() {
     frameCount++;
     stars.forEach(s => { s.y += s.speed; if (s.y > canvas.height) s.y = 0; });
 
     if (gameState !== "PLAYING") return;
     
-    // Safeguard suspended browser audio states automatically inside active execution blocks
     if (audioCtx && audioCtx.state === "suspended") {
         audioCtx.resume();
     }
