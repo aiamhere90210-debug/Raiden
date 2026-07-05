@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Raiden: Vector Overdrive Ultimate</title>
@@ -19,7 +20,19 @@
     /* Prevents pull-to-refresh gestures on mobile */
     overscroll-behavior-y: contain; 
 }
-        }
+
+/* --- STEP 2 GOES HERE (Right inside your style tags) --- */
+#joystick-zone {
+    position: absolute; 
+    bottom: 20px; 
+    left: 20px; 
+    width: 150px; 
+    height: 150px; 
+    z-index: 10;
+    /* Optional: uncomment the line below if you want to see the box while testing */
+    /* border: 1px dashed rgba(255,255,255,0.3); */
+}
+        
         .canvas-container {
             position: relative;
             box-shadow: 0 0 60px rgba(0, 242, 254, 0.35);
@@ -183,6 +196,11 @@
 </head>
 <body>
 
+    <div id="joystick-zone"></div>
+
+    <div class="canvas-container">
+        <canvas id="gameCanvas"></canvas>
+    </div>
 <div class="canvas-container">
     <div id="menuOverlay">
         <div class="menu-title">VECTOR OVERDRIVE: ULTIMATE</div>
@@ -224,6 +242,34 @@
 </div>
 
 <script>
+// 1. Tell NippleJS where to build the joystick
+const joystickContainer = document.getElementById('joystick-zone');
+
+// 2. Configure the joystick
+const manager = nipplejs.create({
+    zone: joystickContainer,
+    mode: 'dynamic', // It pops up exactly where your thumb touches
+    color: 'cyan',   // Matches your game's cool neon vibe
+    size: 100
+});
+
+// 3. Variables to hold the direction data (-1 to 1)
+let joystickX = 0;
+let joystickY = 0;
+
+// 4. Listen for movement
+manager.on('move', (evt, data) => {
+     (data.vector) {
+        joystickX = data.vector.x; // Left is negative, Right is positive
+        joystickY = data.vector.y; // Up is positive, Down is negative
+    }
+});
+
+// 5. Reset when thumb is lifted
+manager.on('end', () => {
+    joystickX = 0;
+    joystickY = 0;
+});    
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -540,18 +586,41 @@ const player = {
     bombs: 2,
 
     update() {
-        let moving = false;
-        if (keys["ArrowLeft"] && this.x > 0) { this.x -= this.speed; this.roll = Math.max(-1, this.roll - 0.18); moving = true; }
-        if (keys["ArrowRight"] && this.x < canvas.width - this.width) { this.x += this.speed; this.roll = Math.min(1, this.roll + 0.18); moving = true; }
-        if (keys["ArrowUp"] && this.y > 0) this.y -= this.speed;
-        if (keys["ArrowDown"] && this.y < canvas.height - this.height) this.y += this.speed;
-        if (!moving) this.roll *= 0.78;
+    let moving = false;
 
-        if (frameCount % 2 === 0) {
-            createPlasmaFlame(this.x + 8 + (this.roll * 4), this.y + this.height - 2, '#ff007f');
-            createPlasmaFlame(this.x + this.width - 12 + (this.roll * 4), this.y + this.height - 2, '#ff007f');
-        }
-    },
+    // --- 1. KEYBOARD CONTROLS (Keep them so both work!) ---
+    if (keys["ArrowLeft"] && this.x > 0) { this.x -= this.speed; this.roll = Math.max(-1, this.roll - 0.18); moving = true; }
+    if (keys["ArrowRight"] && this.x < canvas.width - this.width) { this.x += this.speed; this.roll = Math.min(1, this.roll + 0.18); moving = true; }
+    if (keys["ArrowUp"] && this.y > 0) this.y -= this.speed;
+    if (keys["ArrowDown"] && this.y < canvas.height - this.height) this.y += this.speed;
+
+    // --- 2. NEW VIRTUAL JOYSTICK CONTROLS ---
+    if (Math.abs(joystickX) > 0.1 || Math.abs(joystickY) > 0.1) {
+        moving = true;
+        
+        // Move the ship based on joystick angle/distance
+        this.x += joystickX * this.speed;
+        this.y -= joystickY * this.speed; // Minus because joystick up is positive, Canvas up is negative
+
+        // Handle the visual ship roll based on joystick tilt
+        if (joystickX < 0) this.roll = Math.max(-1, this.roll - 0.18);
+        if (joystickX > 0) this.roll = Math.min(1, this.roll + 0.18);
+    }
+
+    // --- 3. BOUNDARY CLAMPING (Prevents joystick from flying off-screen) ---
+    if (this.x < 0) this.x = 0;
+    if (this.x > canvas.width - this.width) this.x = canvas.width - this.width;
+    if (this.y < 0) this.y = 0;
+    if (this.y > canvas.height - this.height) this.y = canvas.height - this.height;
+
+    // --- 4. ENGINE FLAMES & ROLL STABILIZATION ---
+    if (!moving) this.roll *= 0.78;
+
+    if (frameCount % 2 === 0) {
+        createPlasmaFlame(this.x + 8 + (this.roll * 4), this.y + this.height - 2, '#ff007f');
+        createPlasmaFlame(this.x + this.width - 12 + (this.roll * 4), this.y + this.height - 2, '#ff007f');
+    }
+},
 
     triggerBomb() {
         if (this.bombs <= 0) return;
